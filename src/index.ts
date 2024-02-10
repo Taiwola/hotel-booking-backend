@@ -1,8 +1,9 @@
+import "dotenv/config";
 import express, { urlencoded } from "express";
 import cors from "cors";
-import "dotenv/config";
 import mongoose from "mongoose";
 import cookie from "cookie-parser";
+import path from "path";
 
 
 try {
@@ -25,9 +26,12 @@ app.use(cors({
 }));
 app.use(cookie());
 
+app.use(express.static(path.join(__dirname, "../../frontend/dist")))
+
 
 import userRoutes from "./routes/users.route";
 import authRoutes from "./routes/auth.routes"
+
 
 app.use('/api/users', userRoutes);
 app.use("/api/auth", authRoutes)

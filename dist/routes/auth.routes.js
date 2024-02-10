@@ -59,14 +59,17 @@ router.post('/login', [
     }
 }));
 router.get('/validate-token', authenticate_1.default, (req, res) => {
-    console.log("validate");
     return res.status(200).json({
         userId: req.userId
     });
 });
 router.post('/logout', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('sign-out');
     res.cookie("auth-token", "", {
         expires: new Date(0)
+    });
+    res.status(200).json({
+        message: "request completed"
     });
 }));
 exports.default = router;

@@ -26,11 +26,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
 const express_1 = __importStar(require("express"));
 const cors_1 = __importDefault(require("cors"));
-require("dotenv/config");
 const mongoose_1 = __importDefault(require("mongoose"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const path_1 = __importDefault(require("path"));
 try {
     mongoose_1.default.set('strictQuery', true);
     mongoose_1.default.connect(process.env.MONGO_URL);
@@ -49,6 +50,7 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 app.use((0, cookie_parser_1.default)());
+app.use(express_1.default.static(path_1.default.join(__dirname, "../../frontend/dist")));
 const users_route_1 = __importDefault(require("./routes/users.route"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 app.use('/api/users', users_route_1.default);

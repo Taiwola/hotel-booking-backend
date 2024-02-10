@@ -56,15 +56,19 @@ router.post('/login', [
 
 
 router.get('/validate-token', verifyToken, (req:Request, res:Response) => {
-    console.log("validate")
     return res.status(200).json({
         userId: req.userId
     })
 });
 
 router.post('/logout', async (req: Request, res: Response) => {
+    console.log('sign-out')
     res.cookie("auth-token", "", {
         expires: new Date(0)
+    })
+
+    res.status(200).json({
+        message: "request completed"
     })
 })
 

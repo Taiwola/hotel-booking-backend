@@ -47,13 +47,7 @@ router.post('/', authenticate_1.default, [
                 message: 'Request not found'
             });
         // 1. upload to cloudinary
-        const uploadPromises = imageFile.map((image) => __awaiter(void 0, void 0, void 0, function* () {
-            const b64 = Buffer.from(image.buffer).toString("base64");
-            let dataUrl = "data:" + image.mimetype + ";base64," + b64;
-            const res = yield cloudinary_1.v2.uploader.upload(dataUrl);
-            return res.url;
-        }));
-        const imageUrls = yield Promise.all(uploadPromises);
+        const imageUrls = yield uploadImages(imageFile);
         newHotel.imageUrls = imageUrls;
         newHotel.lastUpdated = new Date();
         newHotel.userId = user._id;
@@ -84,5 +78,62 @@ router.get('/', authenticate_1.default, (req, res) => __awaiter(void 0, void 0, 
         return res.status(500).json({ message: "internal server error" });
     }
 }));
+router.get("/:Id", authenticate_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { Id } = req.params;
+    try {
+        const hotel = yield hotel_1.default.findOne({
+            _id: Id,
+            userId: req.userId
+        });
+        return res.status(200).json(hotel);
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "internal server error"
+        });
+    }
+}));
+router.put("/:Id", authenticate_1.default, upload.array("imageFile"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const updatedHotel = req.body;
+        updatedHotel.lastUpdated = new Date();
+        const hotel = yield hotel_1.default.findOneAndUpdate({
+            _id: req.params.Id,
+            userId: req.userId
+        }, updatedHotel, { new: true });
+        if (!hotel) {
+            return res.status(404).json({
+                message: "Hotel not found"
+            });
+        }
+        const files = req.files;
+        const updatedImages = yield uploadImages(files);
+        hotel.imageUrls = [...updatedImages, ...(updatedHotel.imageUrls || [])];
+        yield hotel.save();
+        return res.status(200).json({
+            message: "Updated was successful",
+            hotel
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "internal server error"
+        });
+    }
+}));
+function uploadImages(imageFile) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const uploadPromises = imageFile.map((image) => __awaiter(this, void 0, void 0, function* () {
+            const b64 = Buffer.from(image.buffer).toString("base64");
+            let dataUrl = "data:" + image.mimetype + ";base64," + b64;
+            const res = yield cloudinary_1.v2.uploader.upload(dataUrl);
+            return res.url;
+        }));
+        const imageUrls = yield Promise.all(uploadPromises);
+        return imageUrls;
+    });
+}
 exports.default = router;
 //# sourceMappingURL=hotels.routes.js.map

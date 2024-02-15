@@ -38,15 +38,7 @@ router.post('/', verifyToken, [
         })
 
         // 1. upload to cloudinary
-        const uploadPromises = imageFile.map(async(image) => {
-            const b64 = Buffer.from(image.buffer).toString("base64");
-
-            let dataUrl = "data:" + image.mimetype + ";base64," + b64;
-            const res = await cloudinary.uploader.upload(dataUrl);
-            return res.url
-        })
-
-        const imageUrls = await Promise.all(uploadPromises);
+        const imageUrls = await uploadImages(imageFile);
 
         newHotel.imageUrls = imageUrls;
         newHotel.lastUpdated = new Date();
@@ -81,6 +73,75 @@ return res.status(200).json(hotels)
     console.log(error);
     return res.status(500).json({message: "internal server error"})
 }
+});
+
+router.get("/:Id", verifyToken, async(req: Request, res: Response) => {
+    const {Id} = req.params;
+
+    try {
+        const hotel = await Hotel.findOne({
+            _id: Id,
+            userId: req.userId
+        });
+
+        return res.status(200).json(hotel);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "internal server error"
+        })
+    }
+});
+
+
+router.put("/:Id", verifyToken, upload.array("imageFile"),async(req: Request, res: Response) => {
+    try {
+        const updatedHotel: HotelType = req.body;
+        updatedHotel.lastUpdated = new Date();
+
+        const hotel = await Hotel.findOneAndUpdate({
+            _id: req.params.Id,
+            userId: req.userId
+        }, updatedHotel, {new: true});
+
+        if (!hotel) {
+            return res.status(404).json({
+                message: "Hotel not found"
+            });
+        }
+
+        const files = req.files as Express.Multer.File[];
+        const updatedImages = await uploadImages(files);
+
+        hotel.imageUrls = [...updatedImages, ...(updatedHotel.imageUrls || [])];
+
+        await hotel.save();
+
+        return res.status(200).json({
+            message: "Updated was successful",
+            hotel
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "internal server error"
+        })
+    }
 })
+
+
+async function uploadImages(imageFile: Express.Multer.File[]) {
+    const uploadPromises = imageFile.map(async (image) => {
+        const b64 = Buffer.from(image.buffer).toString("base64");
+
+        let dataUrl = "data:" + image.mimetype + ";base64," + b64;
+        const res = await cloudinary.uploader.upload(dataUrl);
+        return res.url;
+    });
+
+    const imageUrls = await Promise.all(uploadPromises);
+    return imageUrls;
+}
+
 
 export default router;

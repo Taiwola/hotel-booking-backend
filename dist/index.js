@@ -32,10 +32,16 @@ const cors_1 = __importDefault(require("cors"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const path_1 = __importDefault(require("path"));
+const cloudinary_1 = require("cloudinary");
+cloudinary_1.v2.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_KEY_SECRET
+});
 try {
     mongoose_1.default.set('strictQuery', true);
     mongoose_1.default.connect(process.env.MONGO_URL);
-    console.log('Connected to db');
+    console.log("ok");
 }
 catch (error) {
     console.log(error);
@@ -53,8 +59,10 @@ app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.static(path_1.default.join(__dirname, "../../frontend/dist")));
 const users_route_1 = __importDefault(require("./routes/users.route"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const hotels_routes_1 = __importDefault(require("./routes/hotels.routes"));
 app.use('/api/users', users_route_1.default);
 app.use("/api/auth", auth_routes_1.default);
+app.use("/api/my-hotels", hotels_routes_1.default);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

@@ -37,11 +37,14 @@ app.use(express.static(path.join(__dirname, "../../frontend/dist")))
 import userRoutes from "./routes/users.route";
 import authRoutes from "./routes/auth.routes";
 import hotelRoutes from "./routes/hotels.routes";
+import hotelQueryRoutes from "./routes/hotels";
 
 
 app.use('/api/users', userRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/my-hotels", hotelRoutes)
+app.use("/api/my-hotels", hotelRoutes);
+app.use("/api/hotels", hotelQueryRoutes);
+
 
 
 

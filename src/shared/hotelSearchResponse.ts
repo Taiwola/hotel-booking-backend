@@ -8,3 +8,10 @@ export type HotelSearchResponse = {
         pages: number
     }
 }
+
+
+export type PaymentResponse = {
+    paymentIntentId: string,
+    clientId: string,
+    totalCost: number
+}

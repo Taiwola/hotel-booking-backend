@@ -16,7 +16,27 @@ const express_1 = require("express");
 const user_1 = __importDefault(require("../models/user"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const express_validator_1 = require("express-validator");
+const authenticate_1 = __importDefault(require("../middleware/authenticate"));
 const router = (0, express_1.Router)();
+router.get("/me", authenticate_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    try {
+        const user = yield user_1.default.findById(userId).select("-password");
+        if (!user) {
+            return res.status(400).json({
+                message: "User not found"
+            });
+        }
+        ;
+        return res.status(200).json(user);
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}));
 router.post("/register", [
     (0, express_validator_1.check)("firstName", "first name is required").isString(),
     (0, express_validator_1.check)("lastName", "Last name is required").isString(),

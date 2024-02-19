@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const hotel_1 = __importDefault(require("../models/hotel"));
+const express_validator_1 = require("express-validator");
+const authenticate_1 = __importDefault(require("../middleware/authenticate"));
 const router = (0, express_1.Router)();
 // utility function
 const constructSearchQuery = (queryParams) => {
@@ -90,6 +92,73 @@ router.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return res.status(200).json({
             message: "success",
             response
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}));
+router.get('/:Id', [
+    (0, express_validator_1.param)("Id").notEmpty().withMessage("Hotel Id is required")
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
+    ;
+    const Id = req.params.Id;
+    try {
+        const hotel = yield hotel_1.default.findById(Id);
+        return res.status(200).json(hotel);
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}));
+router.post("/:Id/bookings/payment-intent", authenticate_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { numberOfNights } = req.body;
+    const hotelId = req.params.Id;
+    const hotel = yield hotel_1.default.findById(hotelId);
+    if (!hotel) {
+        return res.status(400).json({
+            message: "Hotel not found"
+        });
+    }
+    ;
+    const totalCost = hotel.pricePerNight * numberOfNights;
+    const response = {
+        paymentIntentId: "Aolo" + Math.floor(Math.random() * 1000),
+        clientId: "Aolo" + Math.floor(Math.random() * 1000),
+        totalCost
+    };
+    return res.status(200).send(response);
+}));
+router.post("/:Id/bookings", authenticate_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const paymentIntentId = req.body.paymentIntentId;
+        if (!paymentIntentId) {
+            return res.status(400).json({ message: "payment not found" });
+        }
+        ;
+        const newBooking = Object.assign(Object.assign({}, req.body), { userId: req.userId });
+        const hotel = yield hotel_1.default.findOneAndUpdate({ _id: req.params.Id }, {
+            $push: { booking: newBooking }
+        }, { new: true });
+        if (!hotel) {
+            return res.status(400).json({
+                message: "hotel not found"
+            });
+        }
+        ;
+        yield hotel.save();
+        return res.status(200).json({
+            message: "Successful"
         });
     }
     catch (error) {

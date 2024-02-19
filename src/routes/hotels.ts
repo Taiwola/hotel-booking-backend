@@ -1,6 +1,8 @@
 import {Router, Request, Response} from "express";
-import Hotel from "../models/hotel";
+import Hotel, { BookingType } from "../models/hotel";
 import { HotelSearchResponse } from "../shared/hotelSearchResponse";
+import { param, validationResult } from "express-validator";
+import verifyToken from "../middleware/authenticate";
 
 const router = Router();
 
@@ -101,5 +103,87 @@ router.get('/search', async (req: Request, res: Response) => {
     }
 });
 
+router.get('/:Id', [
+    param("Id").notEmpty().withMessage("Hotel Id is required")
+] ,async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()) {
+        return res.status(400).json({message: errors.array()});
+    };
+
+    const Id = req.params.Id;
+
+    try {
+        const hotel = await Hotel.findById(Id);
+
+        return res.status(200).json(hotel);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        })
+    }
+});
+
+
+router.post("/:Id/bookings/payment-intent", verifyToken, async (req: Request, res: Response) => {
+    const {numberOfNights} = req.body;
+    const hotelId = req.params.Id;
+
+    const hotel = await Hotel.findById(hotelId);
+
+    if (!hotel) {
+        return res.status(400).json({
+            message: "Hotel not found"
+        })
+    };
+
+    const totalCost = hotel.pricePerNight * numberOfNights;
+
+    const response  = {
+        paymentIntentId: "Aolo"+ Math.floor(Math.random() * 1000),
+        clientId: "Aolo" + Math.floor(Math.random() * 1000),
+        totalCost
+    }
+
+    return res.status(200).send(response);
+});
+
+router.post("/:Id/bookings", verifyToken, async (req: Request, res: Response) => {
+    try {
+        const paymentIntentId = req.body.paymentIntentId;
+
+        if (!paymentIntentId) {
+            return res.status(400).json({message: "payment not found"})
+        };
+
+       const newBooking: BookingType = {
+        ...req.body,
+        userId: req.userId
+       };
+
+       const hotel = await Hotel.findOneAndUpdate({_id: req.params.Id}, {
+        $push: {booking: newBooking}
+       }, {new: true});
+
+       
+
+       if (!hotel) {
+        return res.status(400).json({
+            message: "hotel not found"
+        });
+       };
+
+       await hotel.save();
+       return res.status(200).json({
+        message: "Successful"
+       })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        })
+    }
+})
 
 export default router;

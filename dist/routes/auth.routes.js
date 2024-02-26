@@ -48,7 +48,7 @@ router.post('/login', [
         const token = jsonwebtoken_1.default.sign({ userId: users._id }, process.env.JWT_SECRET, {
             expiresIn: "1d"
         });
-        res.cookie('auth-token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 86400000 });
+        res.cookie('auth-token', token, { httpOnly: true, sameSite: "none", secure: process.env.NODE_ENV === 'production', maxAge: 86400000 });
         res.status(200).json({ userId: users._id });
     }
     catch (error) {

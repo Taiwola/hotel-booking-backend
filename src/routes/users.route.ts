@@ -66,7 +66,7 @@ router.post("/register", [
             process.env.JWT_SECRET as string,
             {expiresIn: '1d'}
             );
-            res.cookie("auth-token", token, {httpOnly: true, secure: process.env.NODE_ENV === 'prodcution', maxAge: 86400000})
+            res.cookie("auth-token", token, {httpOnly: true, sameSite: "none", secure: process.env.NODE_ENV === 'prodcution', maxAge: 86400000})
             return res.status(200).json({
                 message: "your registered ok"
             });

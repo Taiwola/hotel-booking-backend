@@ -101,6 +101,18 @@ router.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
 }));
+router.get("/get", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const hotel = yield hotel_1.default.find().sort("-lastUpdated");
+        return res.status(200).json(hotel);
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}));
 router.get('/:Id', [
     (0, express_validator_1.param)("Id").notEmpty().withMessage("Hotel Id is required")
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {

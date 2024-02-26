@@ -103,6 +103,19 @@ router.get('/search', async (req: Request, res: Response) => {
     }
 });
 
+
+router.get("/get", async (req: Request, res: Response) => {
+    try {
+        const hotel = await Hotel.find().sort("-lastUpdated")
+        return res.status(200).json(hotel);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        })
+    }
+});
+
 router.get('/:Id', [
     param("Id").notEmpty().withMessage("Hotel Id is required")
 ] ,async (req: Request, res: Response) => {

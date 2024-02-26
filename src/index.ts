@@ -38,12 +38,14 @@ import userRoutes from "./routes/users.route";
 import authRoutes from "./routes/auth.routes";
 import hotelRoutes from "./routes/hotels.routes";
 import hotelQueryRoutes from "./routes/hotels";
+import hotelBookings from "./routes/mybookings";
 
 
 app.use('/api/users', userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/my-hotels", hotelRoutes);
 app.use("/api/hotels", hotelQueryRoutes);
+app.use("/api/my-bookings", hotelBookings);
 
 
 

@@ -61,10 +61,12 @@ const users_route_1 = __importDefault(require("./routes/users.route"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const hotels_routes_1 = __importDefault(require("./routes/hotels.routes"));
 const hotels_1 = __importDefault(require("./routes/hotels"));
+const mybookings_1 = __importDefault(require("./routes/mybookings"));
 app.use('/api/users', users_route_1.default);
 app.use("/api/auth", auth_routes_1.default);
 app.use("/api/my-hotels", hotels_routes_1.default);
 app.use("/api/hotels", hotels_1.default);
+app.use("/api/my-bookings", mybookings_1.default);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
